@@ -59,9 +59,29 @@ pub async fn handle_message(ctx: Context, msg: &Message) -> DeukbotResult {
     let cmd = CommandRequestType::create(msg);
     match cmd {
         CommandRequestType::OK(c, pars) => {
-            // TODO: Check whether allowed in this channel.
+            let user_permission = super::permission::get_user_permission_level(
+                &ctx,
+                msg.channel_id.to_channel(&ctx).await.unwrap(),
+                &msg.author,
+            )
+            .await;
+            if user_permission < c.get_permission_level() {
+                info!(
+                    "Unauthorized user tried to run command: '{}'. User: '{}' with permission: {} < {}",
+                    c.get_name(),
+                    msg.author.name,
+                    user_permission,
+                    c.get_permission_level()
+                );
+                return DeukbotResult::Ok;
+            }
 
-            info!("Handling command: '{}'", c.get_name());
+            info!(
+                "Handling command: '{}' for user: '{}' with permission: {}",
+                c.get_name(),
+                msg.author.name,
+                user_permission
+            );
             let res = c
                 .run(CommandData {
                     ctx,

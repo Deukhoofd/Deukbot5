@@ -17,13 +17,19 @@ extern crate simplelog;
 #[macro_use]
 extern crate lazy_static;
 
+#[macro_use]
+extern crate enum_display_derive;
+
 use simplelog::*;
 
 use crate::message_handling::handle_message;
 use deukbot_result::DeukbotResult;
 use serenity::model::channel::Message;
 use serenity::model::gateway::Ready;
+use serenity::model::id::UserId;
 use std::env;
+use std::env::VarError;
+use std::num::ParseIntError;
 
 struct Handler;
 
@@ -64,6 +70,17 @@ async fn main() {
     info!("============================");
 
     message_handling::command_handler::setup_commands();
+    match env::var("OWNER_ID") {
+        Ok(v) => match v.parse::<u64>() {
+            Ok(owner_id) => global::set_owner_id(UserId(owner_id)),
+            Err(_) => {
+                error!("Given owner id was not an u64");
+            }
+        },
+        Err(_) => {
+            warn!("Owner ID was not set.");
+        }
+    }
 
     // Login with a bot token from the environment
     let token = env::var("DISCORD_TOKEN").expect("token");

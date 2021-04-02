@@ -3,13 +3,14 @@ use crate::message_handling::command_handler::command_data::CommandData;
 use crate::message_handling::command_handler::parameter_matcher::{
     generate_parameter_regex, ParameterType,
 };
+use crate::message_handling::permission::PermissionLevel;
 use regex::Regex;
 use serenity::Error;
 
 pub struct Command {
     name: String,
     alternatives: Vec<String>,
-    // TODO: PermissionLevel
+    permission_level: PermissionLevel,
     short_help: Option<String>,
     long_help: Option<String>,
     has_help: bool,
@@ -24,6 +25,7 @@ impl Command {
     pub fn new(
         name: &String,
         alternatives: Vec<String>,
+        permission_level: PermissionLevel,
         func: Box<dyn AsyncFn + Send + Sync + 'static>,
         parameters: Vec<Vec<ParameterType>>,
         short_help: Option<String>,
@@ -34,6 +36,7 @@ impl Command {
         Command {
             name: name.to_string(),
             alternatives,
+            permission_level,
             short_help,
             long_help,
             has_help,
@@ -50,6 +53,9 @@ impl Command {
     }
     pub fn get_alternatives(&self) -> &Vec<String> {
         &self.alternatives
+    }
+    pub fn get_permission_level(&self) -> PermissionLevel {
+        self.permission_level
     }
     pub fn get_parameter_types(&self) -> &Vec<Vec<ParameterType>> {
         &self.parameter_types

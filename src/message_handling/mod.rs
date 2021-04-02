@@ -3,6 +3,7 @@ use serenity::client::Context;
 use serenity::model::prelude::Message;
 
 pub mod command_handler;
+pub mod permission;
 
 pub async fn handle_message(ctx: Context, msg: Message) -> DeukbotResult {
     if msg.author.bot {

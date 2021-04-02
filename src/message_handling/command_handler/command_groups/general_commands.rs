@@ -3,6 +3,7 @@ use super::super::command_group::CommandGroup;
 use crate::embed::set_default_style;
 use crate::message_handling::command_handler::command_data::CommandData;
 use crate::message_handling::command_handler::parameter_matcher::ParameterType;
+use crate::message_handling::permission::PermissionLevel;
 use serenity::model::user::User;
 use serenity::Error;
 
@@ -10,15 +11,15 @@ lazy_static! {
     pub static ref GENERAL_COMMANDS: CommandGroup = {
         CommandGroup {
             commands: vec![
-                CommandBuilder::new("info")
+                CommandBuilder::new("info", PermissionLevel::Everyone)
                     .with_help("Gives basic info on the bot", "Gives basic info on the bot")
                     .with_func(Box::new(info))
                     .build(),
-                CommandBuilder::new("ping")
+                CommandBuilder::new("ping", PermissionLevel::Everyone)
                     .with_help("Ping Pong Response", "Generates a simple Pong response when triggered, and report on the response times")
                     .with_func(Box::new(ping))
                     .build(),
-                CommandBuilder::new("avatar")
+                CommandBuilder::new("avatar", PermissionLevel::Everyone)
                     .with_alternative("pfp")
                     .with_help("Gets a users avatar", "Gets a users avatar. Returns avatar of user using the command if no user was specified.")
                     .with_func(Box::new(avatar))

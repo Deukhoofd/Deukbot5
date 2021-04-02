@@ -1,10 +1,12 @@
 use crate::message_handling::command_handler::async_fn::AsyncFn;
 use crate::message_handling::command_handler::command::Command;
 use crate::message_handling::command_handler::parameter_matcher::ParameterType;
+use crate::message_handling::permission::PermissionLevel;
 
 pub struct CommandBuilder {
     name: String,
     alternatives: Vec<String>,
+    permission_level: PermissionLevel,
     short_help: Option<String>,
     long_help: Option<String>,
     func: Option<Box<dyn AsyncFn + Send + Sync + 'static>>,
@@ -12,10 +14,11 @@ pub struct CommandBuilder {
 }
 
 impl CommandBuilder {
-    pub fn new(name: &str) -> CommandBuilder {
+    pub fn new(name: &str, permission_level: PermissionLevel) -> CommandBuilder {
         CommandBuilder {
             name: name.to_string(),
             alternatives: Vec::new(),
+            permission_level,
             short_help: None,
             long_help: None,
             func: None,
@@ -53,6 +56,7 @@ impl CommandBuilder {
         Command::new(
             &self.name,
             self.alternatives,
+            self.permission_level,
             self.func.unwrap(),
             self.pars,
             self.short_help,

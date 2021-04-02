@@ -48,9 +48,8 @@ impl CommandBuilder {
     }
 
     pub fn build(self) -> Command {
-        match self.func {
-            None => panic!("Command needs to have a function!"),
-            _ => {}
+        if self.func.is_none() {
+            panic!("Command needs to have a function!")
         };
 
         Command::new(

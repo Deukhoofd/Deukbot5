@@ -41,24 +41,17 @@ impl RequestParameter {
         ctx: impl CacheHttp,
         guild: &GuildId,
     ) -> Option<Member> {
-        match self.as_u64() {
-            Some(v) => match guild.member(&ctx, UserId(v)).await {
-                Ok(user) => {
-                    return Some(user);
-                }
-                _ => {}
-            },
-            None => {}
+        if let Some(v) = self.as_u64() {
+            if let Ok(user) = guild.member(&ctx, UserId(v)).await {
+                return Some(user);
+            }
         };
         let mut members = guild.members_iter(ctx.http()).boxed();
         while let Some(member_result) = members.next().await {
-            match member_result {
-                Ok(member) => {
-                    if member.user.name.eq_ignore_ascii_case(self.value.as_str()) {
-                        return Some(member);
-                    }
+            if let Ok(member) = member_result {
+                if member.user.name.eq_ignore_ascii_case(self.value.as_str()) {
+                    return Some(member);
                 }
-                Err(_) => {}
             }
         }
         None
@@ -75,22 +68,22 @@ impl RequestParameter {
     }
 }
 
-fn get_parameter_regex(t: &ParameterType, index: usize) -> String {
+fn get_parameter_regex(t: &ParameterType) -> &str {
     match t {
-        ParameterType::Word => format!(" *(?<par{}>\\w+)", index),
-        ParameterType::Number => format!(" *(?<par{}>\\d+)(?:$| |\n)", index),
-        ParameterType::Remainder => format!(" *(?<par{}>.*)", index),
-        ParameterType::User => format!(" *(?:<@!*(\\d+)>|(\\d+)|(\\w+)(?:$| |\n))"),
-        ParameterType::Timespan => format!(" *(?<par{}>\\d+\\.*\\d*[smhd])", index),
+        ParameterType::Word => (" *(\\w+)"),
+        ParameterType::Number => (" *(\\d+)(?:$| |\n)"),
+        ParameterType::Remainder => (" *(.*)"),
+        ParameterType::User => (" *(?:<@!*(\\d+)>|(\\d+)|(\\w+)(?:$| |\n))"),
+        ParameterType::Timespan => (" *(?\\d+\\.*\\d*[smhd])"),
     }
 }
 
-pub fn generate_parameter_regex(pars: &Vec<Vec<ParameterType>>) -> Vec<Regex> {
+pub fn generate_parameter_regex(pars: &[Vec<ParameterType>]) -> Vec<Regex> {
     let mut a = Vec::new();
     for par_types in pars {
         let mut s = String::new();
-        for (i, t) in par_types.iter().enumerate() {
-            s = s.add(get_parameter_regex(t, i).as_str());
+        for t in par_types {
+            s = s.add(get_parameter_regex(t));
         }
         a.push(Regex::new(s.as_str()).unwrap());
     }

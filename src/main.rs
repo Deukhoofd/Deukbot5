@@ -31,8 +31,6 @@ use serenity::model::channel::Message;
 use serenity::model::gateway::Ready;
 use serenity::model::id::UserId;
 use std::env;
-use std::env::VarError;
-use std::num::ParseIntError;
 
 struct Handler;
 

@@ -51,22 +51,19 @@ impl CommandRequestType {
     fn get_parameters(command: &Command, capture: &str) -> Vec<RequestParameter> {
         for (matcher_index, matcher) in command.get_parameter_matchers().iter().enumerate() {
             let par_captures = matcher.captures(capture);
-            match par_captures {
-                Some(body) => {
-                    let mut a = Vec::new();
-                    let g = &command.get_parameter_types()[matcher_index];
-                    for (i, p) in body.iter().skip(1).enumerate() {
-                        if i >= g.len() {
-                            break;
-                        }
-                        a.push(RequestParameter {
-                            kind: g[i],
-                            value: p.unwrap().as_str().to_string(),
-                        });
+            if let Some(body) = par_captures {
+                let mut a = Vec::new();
+                let g = &command.get_parameter_types()[matcher_index];
+                for (i, p) in body.iter().skip(1).enumerate() {
+                    if i >= g.len() {
+                        break;
                     }
-                    return a;
+                    a.push(RequestParameter {
+                        kind: g[i],
+                        value: p.unwrap().as_str().to_string(),
+                    });
                 }
-                None => {}
+                return a;
             }
         }
         Vec::new()

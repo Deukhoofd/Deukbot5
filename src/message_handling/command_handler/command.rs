@@ -23,7 +23,7 @@ pub struct Command {
 
 impl Command {
     pub fn new(
-        name: &String,
+        name: &str,
         alternatives: Vec<String>,
         permission_level: PermissionLevel,
         func: Box<dyn AsyncFn + Send + Sync + 'static>,

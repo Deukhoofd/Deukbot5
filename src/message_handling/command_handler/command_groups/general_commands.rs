@@ -93,7 +93,7 @@ async fn ping(req: CommandData) -> Result<(), Error> {
 
 async fn avatar(req: CommandData) -> Result<(), Error> {
     let mut user: Option<User> = None;
-    if req.parameters.len() > 0 {
+    if !req.parameters.is_empty() {
         let guild = req.message.guild_id;
         match guild {
             None => {

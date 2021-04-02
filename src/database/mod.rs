@@ -2,8 +2,7 @@ pub mod database_initialization;
 pub mod role_permissions;
 
 use std::env;
-use tokio_postgres::tls::NoTlsStream;
-use tokio_postgres::{Error, NoTls, Socket};
+use tokio_postgres::NoTls;
 
 pub struct DatabaseConnection {
     pub client: tokio_postgres::Client,

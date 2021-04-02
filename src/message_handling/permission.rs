@@ -1,8 +1,7 @@
 use serenity::client::Context;
-use serenity::model::guild::{Member, PartialMember};
-use serenity::model::id::{ChannelId, GuildId, RoleId};
+use serenity::model::guild::PartialMember;
+use serenity::model::id::{GuildId, RoleId};
 use serenity::model::prelude::{Channel, User};
-use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
 use std::fmt::Display;
 use std::sync::Mutex;
@@ -25,16 +24,17 @@ pub enum PermissionLevel {
     BotCreator = 100,
 }
 
-async fn get_db_user_permission_level_for_role(guild: GuildId, role: &RoleId) -> PermissionLevel {
+async fn get_db_user_permission_level_for_role(
+    ctx: &Context,
+    guild: GuildId,
+    role: &RoleId,
+) -> PermissionLevel {
     {
         let mut guard = PERMISSION_CACHE.lock().unwrap();
         match guard.get(&guild) {
             Some(g) => {
-                match g.get(&role) {
-                    Some(p) => {
-                        return *p;
-                    }
-                    None => {}
+                if let Some(p) = g.get(&role) {
+                    return *p;
                 };
             }
             None => {
@@ -42,7 +42,7 @@ async fn get_db_user_permission_level_for_role(guild: GuildId, role: &RoleId) ->
             }
         };
     }
-    let permission = crate::database::role_permissions::get_role_permission(guild, role).await;
+    let permission = crate::database::role_permissions::get_role_permission(ctx, guild, role).await;
     let final_permission = match permission {
         None => PermissionLevel::Everyone,
         Some(v) => v,
@@ -84,7 +84,7 @@ pub async fn get_user_permission_level(
             let mut highest_permission = PermissionLevel::Banned;
             for role in &member.roles {
                 let perm =
-                    get_db_user_permission_level_for_role(guild_channel.guild_id, role).await;
+                    get_db_user_permission_level_for_role(&ctx, guild_channel.guild_id, role).await;
                 if perm > highest_permission {
                     highest_permission = perm;
                 }

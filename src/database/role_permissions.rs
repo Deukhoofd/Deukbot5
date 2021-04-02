@@ -1,10 +1,16 @@
 use crate::message_handling::permission::PermissionLevel;
+use serenity::client::Context;
 use serenity::model::id::{GuildId, RoleId};
 
-pub async fn get_role_permission(guild_id: GuildId, role_id: &RoleId) -> Option<PermissionLevel> {
+pub async fn get_role_permission(
+    ctx: &Context,
+    guild_id: GuildId,
+    role_id: &RoleId,
+) -> Option<PermissionLevel> {
     info!(
         "Fetching permissions for guild {}, role {}",
-        guild_id, role_id
+        guild_id.name(ctx).await.unwrap(),
+        role_id
     );
     let conn = super::get_connection().await;
     let rows = conn
@@ -20,8 +26,8 @@ pub async fn get_role_permission(guild_id: GuildId, role_id: &RoleId) -> Option<
         )
         .await
         .expect("Failed to retrieve permission levels from database");
-    for row in rows {
-        let v: i16 = row.get(0);
+    if !rows.is_empty() {
+        let v: i16 = rows[0].get(0);
         return Some(num::FromPrimitive::from_i16(v).expect("Permission was invalid number?"));
     }
     return None;

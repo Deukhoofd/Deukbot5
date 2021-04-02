@@ -10,7 +10,7 @@ use crate::deukbot_result::DeukbotResult;
 use crate::message_handling::command_handler::command_data::CommandData;
 use crate::message_handling::command_handler::command_request::CommandRequestType;
 use serenity::client::Context;
-use serenity::Error;
+use unicase::UniCase;
 
 pub(crate) mod async_fn;
 pub mod command;
@@ -25,11 +25,11 @@ const COMMAND_TRIGGER: char = '~';
 
 lazy_static! {
     static ref COMMAND_GROUPS: Vec<&'static CommandGroup> = vec![&*GENERAL_COMMANDS];
-    static ref COMMAND_LOOKUP: HashMap<String, &'static Command> = {
+    static ref COMMAND_LOOKUP: HashMap<UniCase<String>, &'static Command> = {
         let mut h = HashMap::new();
         for cg in &*COMMAND_GROUPS {
             for command in &cg.commands {
-                h.insert(command.get_name().to_string(), command);
+                h.insert(UniCase::new(command.get_name().to_string()), command);
             }
         }
 
@@ -58,6 +58,7 @@ pub async fn handle_message(ctx: Context, msg: &Message) -> DeukbotResult {
         CommandRequestType::OK(c) => {
             // TODO: Check whether allowed in this channel.
 
+            info!("Handling command: '{}'", c.get_name());
             let res = c
                 .run(CommandData {
                     ctx,

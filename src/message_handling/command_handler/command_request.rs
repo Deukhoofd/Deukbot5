@@ -1,6 +1,7 @@
 use crate::message_handling::command_handler::command::Command;
 use regex::Regex;
 use serenity::model::channel::Message;
+use unicase::UniCase;
 
 lazy_static! {
     static ref COMMAND_NAME_PATTERN: String = {
@@ -31,7 +32,8 @@ impl CommandRequestType {
             return CommandRequestType::Invalid;
         }
         let command_name = captures.get(1).unwrap();
-        let command_opt = super::COMMAND_LOOKUP.get(command_name.as_str());
+        let command_opt =
+            super::COMMAND_LOOKUP.get(&UniCase::new(command_name.as_str().to_string()));
         if command_opt.is_none() {
             return CommandRequestType::UnknownCommand;
         }

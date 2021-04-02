@@ -1,21 +1,46 @@
 use crate::message_handling::command_handler::async_fn::AsyncFn;
 use crate::message_handling::command_handler::command::Command;
+use crate::message_handling::command_handler::parameter_matcher::ParameterType;
 
 pub struct CommandBuilder {
     name: String,
+    alternatives: Vec<String>,
+    short_help: Option<String>,
+    long_help: Option<String>,
     func: Option<Box<dyn AsyncFn + Send + Sync + 'static>>,
+    pars: Vec<Vec<ParameterType>>,
 }
 
 impl CommandBuilder {
     pub fn new(name: &str) -> CommandBuilder {
         CommandBuilder {
             name: name.to_string(),
+            alternatives: Vec::new(),
+            short_help: None,
+            long_help: None,
             func: None,
+            pars: Vec::new(),
         }
+    }
+
+    pub fn with_alternative(mut self, name: &str) -> CommandBuilder {
+        self.alternatives.push(name.to_string());
+        self
+    }
+
+    pub fn with_help(mut self, short_help: &str, long_help: &str) -> CommandBuilder {
+        self.short_help = Some(short_help.to_string());
+        self.long_help = Some(long_help.to_string());
+        self
     }
 
     pub fn with_func(mut self, func: Box<dyn AsyncFn + Send + Sync + 'static>) -> CommandBuilder {
         self.func = Some(func);
+        self
+    }
+
+    pub fn with_parameters(mut self, pars: Vec<ParameterType>) -> CommandBuilder {
+        self.pars.push(pars);
         self
     }
 
@@ -25,6 +50,13 @@ impl CommandBuilder {
             _ => {}
         };
 
-        Command::new(&self.name, self.func.unwrap())
+        Command::new(
+            &self.name,
+            self.alternatives,
+            self.func.unwrap(),
+            self.pars,
+            self.short_help,
+            self.long_help,
+        )
     }
 }

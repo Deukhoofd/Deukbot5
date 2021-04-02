@@ -1,4 +1,5 @@
 use crate::message_handling::command_handler::command::Command;
+use crate::message_handling::command_handler::parameter_matcher::RequestParameter;
 use regex::Regex;
 use serenity::model::channel::Message;
 use unicase::UniCase;
@@ -14,7 +15,7 @@ lazy_static! {
 }
 
 pub enum CommandRequestType {
-    OK(&'static Command),
+    OK(&'static Command, Vec<RequestParameter>),
     UnknownCommand,
     Invalid,
     Forbidden,
@@ -37,11 +38,37 @@ impl CommandRequestType {
         if command_opt.is_none() {
             return CommandRequestType::UnknownCommand;
         }
+        let command = command_opt.unwrap();
 
         // TODO: Permissions
 
-        // TODO: Parameters
+        let parameters =
+            CommandRequestType::get_parameters(command, captures.get(2).unwrap().as_str());
 
-        CommandRequestType::OK(command_opt.unwrap())
+        CommandRequestType::OK(command, parameters)
+    }
+
+    fn get_parameters(command: &Command, capture: &str) -> Vec<RequestParameter> {
+        for (matcher_index, matcher) in command.get_parameter_matchers().iter().enumerate() {
+            let par_captures = matcher.captures(capture);
+            match par_captures {
+                Some(body) => {
+                    let mut a = Vec::new();
+                    let g = &command.get_parameter_types()[matcher_index];
+                    for (i, p) in body.iter().skip(1).enumerate() {
+                        if i >= g.len() {
+                            break;
+                        }
+                        a.push(RequestParameter {
+                            kind: g[i],
+                            value: p.unwrap().as_str().to_string(),
+                        });
+                    }
+                    return a;
+                }
+                None => {}
+            }
+        }
+        Vec::new()
     }
 }

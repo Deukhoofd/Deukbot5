@@ -30,6 +30,9 @@ lazy_static! {
         for cg in &*COMMAND_GROUPS {
             for command in &cg.commands {
                 h.insert(UniCase::new(command.get_name().to_string()), command);
+                for alternative in command.get_alternatives() {
+                    h.insert(UniCase::new(alternative.to_string()), command);
+                }
             }
         }
 
@@ -55,7 +58,7 @@ pub async fn handle_message(ctx: Context, msg: &Message) -> DeukbotResult {
 
     let cmd = CommandRequestType::create(msg);
     match cmd {
-        CommandRequestType::OK(c) => {
+        CommandRequestType::OK(c, pars) => {
             // TODO: Check whether allowed in this channel.
 
             info!("Handling command: '{}'", c.get_name());
@@ -63,6 +66,7 @@ pub async fn handle_message(ctx: Context, msg: &Message) -> DeukbotResult {
                 .run(CommandData {
                     ctx,
                     message: msg.clone(),
+                    parameters: pars,
                 })
                 .await;
             return match res {

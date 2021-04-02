@@ -9,6 +9,7 @@ use command_groups::general_commands::*;
 use crate::deukbot_result::DeukbotResult;
 use crate::message_handling::command_handler::command_data::CommandData;
 use crate::message_handling::command_handler::command_request::CommandRequestType;
+use crate::message_handling::permission::PermissionLevel;
 use serenity::client::Context;
 use unicase::UniCase;
 
@@ -59,12 +60,18 @@ pub async fn handle_message(ctx: Context, msg: &Message) -> DeukbotResult {
     let cmd = CommandRequestType::create(msg);
     match cmd {
         CommandRequestType::OK(c, pars) => {
-            let user_permission = super::permission::get_user_permission_level(
-                &ctx,
-                msg.channel_id.to_channel(&ctx).await.unwrap(),
-                &msg.author,
-            )
-            .await;
+            let user_permission = match &msg.member {
+                None => PermissionLevel::Everyone,
+                Some(member) => {
+                    super::permission::get_user_permission_level(
+                        &ctx,
+                        msg.channel_id.to_channel(&ctx).await.unwrap(),
+                        &msg.author,
+                        &member,
+                    )
+                    .await
+                }
+            };
             if user_permission < c.get_permission_level() {
                 info!(
                     "Unauthorized user tried to run command: '{}'. User: '{}' with permission: {} < {}",

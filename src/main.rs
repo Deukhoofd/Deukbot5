@@ -2,6 +2,7 @@
 #![feature(fn_traits)]
 #![feature(in_band_lifetimes)]
 
+pub mod database;
 pub mod deukbot_result;
 pub mod embed;
 pub mod global;
@@ -19,6 +20,8 @@ extern crate lazy_static;
 
 #[macro_use]
 extern crate enum_display_derive;
+#[macro_use]
+extern crate num_derive;
 
 use simplelog::*;
 
@@ -68,6 +71,8 @@ async fn main() {
     info!("============================");
     info!("=== Starting Up Deukbot! ===");
     info!("============================");
+
+    database::database_initialization::initialise_tables().await;
 
     message_handling::command_handler::setup_commands();
     match env::var("OWNER_ID") {

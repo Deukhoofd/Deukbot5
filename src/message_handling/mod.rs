@@ -12,7 +12,7 @@ pub async fn handle_message(ctx: Context, msg: Message) -> DeukbotResult {
         return DeukbotResult::Ok;
     }
 
-    info!("{}", msg.content);
+    trace!("{}", msg.content);
     command_handler::handle_message(ctx, &msg).await;
 
     DeukbotResult::Ok

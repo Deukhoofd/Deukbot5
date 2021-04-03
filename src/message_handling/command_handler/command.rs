@@ -30,6 +30,7 @@ impl Command {
         short_help: Option<String>,
         long_help: Option<String>,
         require_parameter_match: bool,
+        forbid_in_pm: bool,
     ) -> Command {
         let matchers = generate_parameter_regex(&parameters);
         Command {
@@ -39,7 +40,7 @@ impl Command {
             short_help,
             long_help,
             parameter_types: parameters,
-            forbid_in_pm: false,
+            forbid_in_pm,
             require_parameter_match,
             parameter_matchers: matchers,
             func,
@@ -70,6 +71,9 @@ impl Command {
     }
     pub fn require_parameter_match(&self) -> bool {
         self.require_parameter_match
+    }
+    pub fn forbidden_in_pm(&self) -> bool {
+        self.forbid_in_pm
     }
 
     pub async fn run<'a>(&self, req: CommandData) -> Result<(), Error> {

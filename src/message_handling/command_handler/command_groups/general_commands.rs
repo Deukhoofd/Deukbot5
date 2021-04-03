@@ -1,8 +1,8 @@
 use super::super::command_builder::CommandBuilder;
-use super::super::command_group::CommandGroup;
 use super::send_message;
 use crate::embed::{set_default_style, setup_embed};
 use crate::message_handling::command_handler::command_data::CommandData;
+use crate::message_handling::command_handler::command_groups::command_group::CommandGroup;
 use crate::message_handling::command_handler::parameter_matcher::ParameterType;
 use crate::message_handling::permission::PermissionLevel;
 use serenity::model::user::User;

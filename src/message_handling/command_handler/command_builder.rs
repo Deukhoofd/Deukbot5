@@ -12,6 +12,7 @@ pub struct CommandBuilder {
     func: Option<Box<dyn AsyncFn + Send + Sync + 'static>>,
     pars: Vec<Vec<ParameterType>>,
     require_parameter_match: bool,
+    forbid_in_pms: bool,
 }
 
 impl CommandBuilder {
@@ -25,6 +26,7 @@ impl CommandBuilder {
             func: None,
             pars: Vec::new(),
             require_parameter_match: false,
+            forbid_in_pms: false,
         }
     }
 
@@ -54,6 +56,11 @@ impl CommandBuilder {
         self
     }
 
+    pub fn forbid_in_pms(mut self) -> CommandBuilder {
+        self.forbid_in_pms = true;
+        self
+    }
+
     pub fn build(self) -> Command {
         if self.func.is_none() {
             panic!("Command needs to have a function!")
@@ -68,6 +75,7 @@ impl CommandBuilder {
             self.short_help,
             self.long_help,
             self.require_parameter_match,
+            self.forbid_in_pms,
         )
     }
 }

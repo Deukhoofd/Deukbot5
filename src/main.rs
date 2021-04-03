@@ -4,6 +4,7 @@
 
 #[allow(clippy::too_many_arguments)]
 pub mod database;
+pub mod defines;
 pub mod deukbot_result;
 pub mod embed;
 pub mod global;
@@ -33,8 +34,43 @@ use serenity::model::gateway::Ready;
 use serenity::model::id::UserId;
 use std::env;
 
-struct Handler;
+#[tokio::main]
+async fn main() {
+    setup_logging();
 
+    info!("============================");
+    info!("=== Starting Up Deukbot! ===");
+    info!("============================");
+
+    database::database_initialization::initialise_tables().await;
+
+    message_handling::command_handler::command_groups::setup_commands();
+    match env::var("OWNER_ID") {
+        Ok(v) => match v.parse::<u64>() {
+            Ok(owner_id) => global::set_owner_id(UserId(owner_id)),
+            Err(_) => {
+                error!("Given owner id was not an u64");
+            }
+        },
+        Err(_) => {
+            warn!("Owner ID was not set.");
+        }
+    }
+
+    // Login with a bot token from the environment
+    let token = env::var("DISCORD_TOKEN").expect("token");
+    let mut client = Client::builder(token)
+        .event_handler(Handler)
+        .await
+        .expect("Error creating client");
+
+    // start listening for events by starting a single shard
+    if let Err(why) = client.start_autosharded().await {
+        println!("An error occurred while running the client: {:?}", why);
+    }
+}
+
+struct Handler;
 #[async_trait]
 impl EventHandler for Handler {
     async fn message(&self, _ctx: Context, _new_message: Message) {
@@ -61,40 +97,4 @@ fn setup_logging() {
         ColorChoice::Auto,
     )])
     .unwrap();
-}
-
-#[tokio::main]
-async fn main() {
-    setup_logging();
-
-    info!("============================");
-    info!("=== Starting Up Deukbot! ===");
-    info!("============================");
-
-    database::database_initialization::initialise_tables().await;
-
-    message_handling::command_handler::setup_commands();
-    match env::var("OWNER_ID") {
-        Ok(v) => match v.parse::<u64>() {
-            Ok(owner_id) => global::set_owner_id(UserId(owner_id)),
-            Err(_) => {
-                error!("Given owner id was not an u64");
-            }
-        },
-        Err(_) => {
-            warn!("Owner ID was not set.");
-        }
-    }
-
-    // Login with a bot token from the environment
-    let token = env::var("DISCORD_TOKEN").expect("token");
-    let mut client = Client::builder(token)
-        .event_handler(Handler)
-        .await
-        .expect("Error creating client");
-
-    // start listening for events by starting a single shard
-    if let Err(why) = client.start_autosharded().await {
-        println!("An error occurred while running the client: {:?}", why);
-    }
 }

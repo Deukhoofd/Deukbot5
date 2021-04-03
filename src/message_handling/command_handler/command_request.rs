@@ -10,7 +10,7 @@ lazy_static! {
     static ref COMMAND_NAME_PATTERN: String = {
         format!(
             "(?:<@!?\\d*> !*|^{}+)([^ ]+) *(.*)",
-            crate::message_handling::command_handler::COMMAND_TRIGGER
+            crate::defines::COMMAND_TRIGGER
         )
     };
     static ref COMMAND_NAME_MATCHER: Regex = Regex::new(&COMMAND_NAME_PATTERN).unwrap();
@@ -35,12 +35,15 @@ impl CommandRequestType {
             return CommandRequestType::Invalid;
         }
         let command_name = captures.get(1).unwrap();
-        let command_opt =
-            super::COMMAND_LOOKUP.get(&UniCase::new(command_name.as_str().to_string()));
+        let command_opt = super::command_groups::COMMAND_LOOKUP
+            .get(&UniCase::new(command_name.as_str().to_string()));
         if command_opt.is_none() {
             return CommandRequestType::UnknownCommand;
         }
         let command = command_opt.unwrap();
+        if command.forbidden_in_pm() && msg.guild_id.is_none() {
+            return CommandRequestType::Forbidden(command, PermissionLevel::Everyone);
+        }
 
         let user_permission = match &msg.member {
             None => PermissionLevel::Everyone,

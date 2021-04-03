@@ -1,6 +1,7 @@
 use serenity::client::Context;
+use serenity::model::channel::GuildChannel;
 use serenity::model::guild::PartialMember;
-use serenity::model::id::{GuildId, RoleId};
+use serenity::model::id::{GuildId, RoleId, UserId};
 use serenity::model::prelude::{Channel, User};
 use std::collections::HashMap;
 use std::fmt::Display;
@@ -57,6 +58,20 @@ async fn get_db_user_permission_level_for_role(
     final_permission
 }
 
+async fn get_guild_owner(guild_channel: &GuildChannel, ctx: &Context) -> UserId {
+    match guild_channel.guild(ctx).await {
+        None => {
+            guild_channel
+                .guild_id
+                .to_partial_guild(ctx)
+                .await
+                .unwrap()
+                .owner_id
+        }
+        Some(g) => g.owner_id,
+    }
+}
+
 pub async fn get_user_permission_level(
     ctx: &Context,
     channel: Channel,
@@ -71,26 +86,20 @@ pub async fn get_user_permission_level(
     }
     return match channel {
         Channel::Guild(guild_channel) => {
-            // if guild_channel
-            //     .guild_id
-            //     .to_partial_guild(ctx)
-            //     .await
-            //     .unwrap()
-            //     .owner_id
-            //     == user.id
-            // {
-            //     PermissionLevel::ServerOwner
-            // } else {
-            let mut highest_permission = PermissionLevel::Banned;
-            for role in &member.roles {
-                let perm =
-                    get_db_user_permission_level_for_role(&ctx, guild_channel.guild_id, role).await;
-                if perm > highest_permission {
-                    highest_permission = perm;
+            if get_guild_owner(&guild_channel, ctx).await == user.id {
+                PermissionLevel::ServerOwner
+            } else {
+                let mut highest_permission = PermissionLevel::Banned;
+                for role in &member.roles {
+                    let perm =
+                        get_db_user_permission_level_for_role(&ctx, guild_channel.guild_id, role)
+                            .await;
+                    if perm > highest_permission {
+                        highest_permission = perm;
+                    }
                 }
+                highest_permission
             }
-            highest_permission
-            // }
         }
         _ => PermissionLevel::Everyone,
     };

@@ -2,6 +2,7 @@
 #![feature(fn_traits)]
 #![feature(in_band_lifetimes)]
 
+#[allow(clippy::too_many_arguments)]
 pub mod database;
 pub mod deukbot_result;
 pub mod embed;

@@ -56,7 +56,12 @@ pub async fn handle_message(ctx: Context, msg: &Message) -> DeukbotResult {
         return DeukbotResult::Ok;
     }
 
+    let start_time = chrono::Utc::now();
     let cmd = CommandRequestType::create(&ctx, msg).await;
+    trace!(
+        "Command request creation time: {} ms",
+        ((chrono::Utc::now() - start_time).num_milliseconds())
+    );
     match cmd {
         CommandRequestType::OK(c, pars, user_permission) => {
             info!(
@@ -65,6 +70,8 @@ pub async fn handle_message(ctx: Context, msg: &Message) -> DeukbotResult {
                 msg.author.name,
                 user_permission
             );
+
+            let cmd_start_time = chrono::Utc::now();
             let res = c
                 .run(CommandData {
                     ctx,
@@ -72,6 +79,11 @@ pub async fn handle_message(ctx: Context, msg: &Message) -> DeukbotResult {
                     parameters: pars,
                 })
                 .await;
+            trace!(
+                "Command run time for command: '{}': {} ms",
+                c.get_name(),
+                ((chrono::Utc::now() - cmd_start_time).num_milliseconds())
+            );
             return match res {
                 Ok(_) => DeukbotResult::Ok,
                 Err(e) => DeukbotResult::Err(e.to_string()),

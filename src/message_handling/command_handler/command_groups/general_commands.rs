@@ -1,5 +1,6 @@
 use super::super::command_builder::CommandBuilder;
 use super::super::command_group::CommandGroup;
+use super::send_message;
 use crate::embed::{set_default_style, setup_embed};
 use crate::message_handling::command_handler::command_data::CommandData;
 use crate::message_handling::command_handler::parameter_matcher::ParameterType;
@@ -105,24 +106,21 @@ async fn avatar(req: CommandData) -> Result<(), Error> {
         user = Some(req.message.author);
     }
     if user.is_none() {
-        req.message
-            .channel_id
-            .send_message(&req.ctx, |m| {
-                m.embed(|e| setup_embed(e, "Avatar", "Can't find that user"))
-            })
-            .await?;
-        return Ok(());
-    }
-    req.message
-        .channel_id
-        .send_message(&req.ctx, |m| {
-            m.embed(|e| {
-                set_default_style(e)
-                    .title("Avatar")
-                    .image(user.unwrap().avatar_url().unwrap())
-            })
+        send_message(&req.message.channel_id, &req.ctx, |m| {
+            m.embed(|e| setup_embed(e, "Avatar", "Can't find that user"))
         })
         .await?;
+        return Ok(());
+    }
+
+    send_message(&req.message.channel_id, &req.ctx, |m| {
+        m.embed(|e| {
+            set_default_style(e)
+                .title("Avatar")
+                .image(user.unwrap().face())
+        })
+    })
+    .await?;
 
     Ok(())
 }

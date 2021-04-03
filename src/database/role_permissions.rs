@@ -7,11 +7,16 @@ pub async fn get_role_permission(
     guild_id: GuildId,
     role_id: &RoleId,
 ) -> Option<PermissionLevel> {
+    let start_time = chrono::Utc::now();
     info!(
         "Fetching permissions for guild {}, role {}",
         guild_id.name(ctx).await.unwrap(),
-        guild_id.to_partial_guild(ctx).await.unwrap().roles[role_id].name
+        match role_id.to_role_cached(ctx).await {
+            None => role_id.to_string(),
+            Some(v) => v.name,
+        }
     );
+
     let conn = super::get_connection().await;
     let rows = conn
         .client
@@ -30,5 +35,9 @@ pub async fn get_role_permission(
         let v: i16 = rows[0].get(0);
         return Some(num::FromPrimitive::from_i16(v).expect("Permission was invalid number?"));
     }
+    trace!(
+        "Getting permission level db time: {} ms",
+        (chrono::Utc::now() - start_time).num_milliseconds()
+    );
     return None;
 }

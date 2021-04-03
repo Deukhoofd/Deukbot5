@@ -76,8 +76,13 @@ impl CommandRequestType {
             if let Some(body) = par_captures {
                 let mut a = Vec::new();
                 let g = &command.get_parameter_types()[matcher_index];
+                let mut is_error = false;
                 for (i, p) in body.iter().skip(1).enumerate() {
                     if i >= g.len() {
+                        break;
+                    }
+                    if p.is_none() {
+                        is_error = true;
                         break;
                     }
                     a.push(RequestParameter {
@@ -85,7 +90,9 @@ impl CommandRequestType {
                         value: p.unwrap().as_str().to_string(),
                     });
                 }
-                return Some(a);
+                if !is_error {
+                    return Some(a);
+                }
             }
         }
         if command.require_parameter_match() {

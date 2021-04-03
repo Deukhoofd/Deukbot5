@@ -56,4 +56,4 @@ features = [
     "rustls_backend",
     "cache",
 ]
-version = "0.10"
+version = "0.10.4"

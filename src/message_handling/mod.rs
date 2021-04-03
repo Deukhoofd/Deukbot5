@@ -9,7 +9,7 @@ pub async fn handle_message(ctx: Context, msg: Message) -> DeukbotResult {
     if msg.author.bot {
         return DeukbotResult::Ok;
     }
-    if msg.author.id == crate::global::deukbot_id() {
+    if msg.author.id == ctx.cache.current_user_id().await {
         return DeukbotResult::Ok;
     }
 

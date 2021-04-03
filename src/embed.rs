@@ -1,22 +1,22 @@
 use serenity::builder::CreateEmbed;
+use serenity::model::user::CurrentUser;
 use serenity::utils::Color;
 
 pub fn setup_embed(
+    u: &CurrentUser,
     e: &'a mut serenity::builder::CreateEmbed,
     title: &str,
     description: &str,
 ) -> &'a mut CreateEmbed {
     e.title(title);
     e.description(description);
-    set_default_style(e)
+    set_default_embed_style(u, e)
 }
 
-pub fn set_default_style(e: &mut CreateEmbed) -> &mut CreateEmbed {
-    let user = crate::global::self_user().as_ref().unwrap();
-
+pub fn set_default_embed_style<'a>(u: &CurrentUser, e: &'a mut CreateEmbed) -> &'a mut CreateEmbed {
     e.author(|a| {
-        a.name(user.name.to_string());
-        a.icon_url(user.static_avatar_url().unwrap());
+        a.name(u.name.to_string());
+        a.icon_url(u.static_avatar_url().unwrap());
 
         a
     });

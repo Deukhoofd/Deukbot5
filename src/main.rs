@@ -82,8 +82,6 @@ impl EventHandler for Handler {
 
     async fn ready(&self, _ctx: Context, _data_about_bot: Ready) {
         info!("Ready!");
-        global::set_deukbot_id(_data_about_bot.user.id);
-        global::set_self_user(&_ctx).await;
     }
 }
 

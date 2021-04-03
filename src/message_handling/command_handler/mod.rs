@@ -19,7 +19,7 @@ pub async fn handle_message(ctx: Context, msg: &Message) -> DeukbotResult {
     }
     // Message needs to start with the command trigger, or mention the bot user.
     if msg.content.chars().next().unwrap() != crate::defines::COMMAND_TRIGGER
-        && !msg.mentions_user_id(crate::global::deukbot_id())
+        && !msg.mentions_user_id(ctx.cache.current_user_id().await)
     {
         return DeukbotResult::Ok;
     }
@@ -40,12 +40,14 @@ pub async fn handle_message(ctx: Context, msg: &Message) -> DeukbotResult {
             );
 
             let cmd_start_time = chrono::Utc::now();
+            let current_user = ctx.cache.current_user().await;
             let res = c
                 .run(CommandData {
                     ctx,
                     message: msg.clone(),
                     parameters: pars,
                     permission: user_permission,
+                    current_user,
                 })
                 .await;
             trace!(

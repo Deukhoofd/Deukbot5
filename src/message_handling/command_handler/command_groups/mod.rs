@@ -1,4 +1,4 @@
-use serenity::builder::CreateMessage;
+use serenity::builder::{CreateEmbed, CreateMessage};
 use serenity::http::Http;
 use serenity::model::prelude::{ChannelId, Message};
 
@@ -6,8 +6,10 @@ pub mod command_group;
 pub mod general_commands;
 
 use super::command::Command;
+use crate::message_handling::permission::PermissionLevel;
 use command_group::CommandGroup;
 use std::collections::HashMap;
+use std::ops::Add;
 use unicase::UniCase;
 
 lazy_static! {
@@ -48,4 +50,28 @@ where
         ((chrono::Utc::now() - start_time).num_milliseconds())
     );
     res
+}
+
+pub fn build_help_function(embed: &mut CreateEmbed, permission: PermissionLevel) {
+    for command_group in COMMAND_GROUPS.iter() {
+        let mut s = String::new();
+        for command in command_group.commands.iter() {
+            if command.get_short_help().is_none() {
+                continue;
+            }
+            if command.get_permission_level() < permission {
+                s = s.add(
+                    format!(
+                        "**{}**: {}\n",
+                        command.get_name(),
+                        command.get_short_help().as_ref().unwrap()
+                    )
+                    .as_str(),
+                );
+            }
+        }
+        if !s.is_empty() {
+            embed.field(command_group.name.to_string(), s, false);
+        }
+    }
 }

@@ -13,7 +13,6 @@ pub struct Command {
     permission_level: PermissionLevel,
     short_help: Option<String>,
     long_help: Option<String>,
-    has_help: bool,
     parameter_types: Vec<Vec<ParameterType>>,
     forbid_in_pm: bool,
     require_parameter_match: bool,
@@ -30,19 +29,18 @@ impl Command {
         parameters: Vec<Vec<ParameterType>>,
         short_help: Option<String>,
         long_help: Option<String>,
+        require_parameter_match: bool,
     ) -> Command {
         let matchers = generate_parameter_regex(&parameters);
-        let has_help = short_help.is_some();
         Command {
             name: name.to_string(),
             alternatives,
             permission_level,
             short_help,
             long_help,
-            has_help,
             parameter_types: parameters,
             forbid_in_pm: false,
-            require_parameter_match: false,
+            require_parameter_match,
             parameter_matchers: matchers,
             func,
         }
@@ -69,6 +67,9 @@ impl Command {
     }
     pub fn get_long_help(&self) -> &Option<String> {
         &self.long_help
+    }
+    pub fn require_parameter_match(&self) -> bool {
+        self.require_parameter_match
     }
 
     pub async fn run<'a>(&self, req: CommandData) -> Result<(), Error> {

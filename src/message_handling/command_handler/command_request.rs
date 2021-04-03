@@ -44,11 +44,14 @@ impl CommandRequestType {
 
         let parameters =
             CommandRequestType::get_parameters(command, captures.get(2).unwrap().as_str());
+        if parameters.is_none() {
+            return CommandRequestType::InvalidParameters;
+        }
 
-        CommandRequestType::OK(command, parameters)
+        CommandRequestType::OK(command, parameters.unwrap())
     }
 
-    fn get_parameters(command: &Command, capture: &str) -> Vec<RequestParameter> {
+    fn get_parameters(command: &Command, capture: &str) -> Option<Vec<RequestParameter>> {
         for (matcher_index, matcher) in command.get_parameter_matchers().iter().enumerate() {
             let par_captures = matcher.captures(capture);
             if let Some(body) = par_captures {
@@ -63,9 +66,13 @@ impl CommandRequestType {
                         value: p.unwrap().as_str().to_string(),
                     });
                 }
-                return a;
+                return Some(a);
             }
         }
-        Vec::new()
+        if command.require_parameter_match() {
+            None
+        } else {
+            Some(Vec::new())
+        }
     }
 }

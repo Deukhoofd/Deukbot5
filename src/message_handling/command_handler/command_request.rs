@@ -1,6 +1,8 @@
 use crate::message_handling::command_handler::command::Command;
 use crate::message_handling::command_handler::parameter_matcher::RequestParameter;
+use crate::message_handling::permission::PermissionLevel;
 use regex::Regex;
+use serenity::client::Context;
 use serenity::model::channel::Message;
 use unicase::UniCase;
 
@@ -15,15 +17,15 @@ lazy_static! {
 }
 
 pub enum CommandRequestType {
-    OK(&'static Command, Vec<RequestParameter>),
+    OK(&'static Command, Vec<RequestParameter>, PermissionLevel),
     UnknownCommand,
     Invalid,
-    Forbidden,
+    Forbidden(&'static Command, PermissionLevel),
     InvalidParameters,
 }
 
 impl CommandRequestType {
-    pub fn create(msg: &Message) -> CommandRequestType {
+    pub async fn create(ctx: &Context, msg: &Message) -> CommandRequestType {
         let captures_opt = COMMAND_NAME_MATCHER.captures(&msg.content);
         if captures_opt.is_none() {
             return CommandRequestType::Invalid;
@@ -40,7 +42,21 @@ impl CommandRequestType {
         }
         let command = command_opt.unwrap();
 
-        // TODO: Permissions
+        let user_permission = match &msg.member {
+            None => PermissionLevel::Everyone,
+            Some(member) => {
+                super::super::permission::get_user_permission_level(
+                    &ctx,
+                    msg.channel_id.to_channel(&ctx).await.unwrap(),
+                    &msg.author,
+                    &member,
+                )
+                .await
+            }
+        };
+        if user_permission < command.get_permission_level() {
+            return CommandRequestType::Forbidden(command, user_permission);
+        }
 
         let parameters =
             CommandRequestType::get_parameters(command, captures.get(2).unwrap().as_str());
@@ -48,7 +64,7 @@ impl CommandRequestType {
             return CommandRequestType::InvalidParameters;
         }
 
-        CommandRequestType::OK(command, parameters.unwrap())
+        CommandRequestType::OK(command, parameters.unwrap(), user_permission)
     }
 
     fn get_parameters(command: &Command, capture: &str) -> Option<Vec<RequestParameter>> {

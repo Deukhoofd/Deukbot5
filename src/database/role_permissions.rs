@@ -10,7 +10,7 @@ pub async fn get_role_permission(
     info!(
         "Fetching permissions for guild {}, role {}",
         guild_id.name(ctx).await.unwrap(),
-        role_id
+        guild_id.to_partial_guild(ctx).await.unwrap().roles[role_id].name
     );
     let conn = super::get_connection().await;
     let rows = conn

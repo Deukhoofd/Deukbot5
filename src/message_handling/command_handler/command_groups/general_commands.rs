@@ -36,6 +36,12 @@ Usage:
                     .with_func(Box::new(avatar))
                     .with_parameters(vec![ParameterType::User])
                     .build(),
+                CommandBuilder::new("whatdoyouthinkdeukbot", PermissionLevel::Everyone)
+                    .with_alternative("whatdoyouthink")
+                    .with_help("Gives the bots opinion about something", "Gives the bots opinion about something\nusage:\n``whatdoyouthink {about something}``")
+                    .with_func(Box::new(bot_opinion))
+                    .with_parameters(vec![ParameterType::Remainder])
+                    .build(),
             ],
         }
     };
@@ -172,5 +178,14 @@ async fn avatar(req: CommandData) -> Result<(), Error> {
     })
     .await?;
 
+    Ok(())
+}
+
+async fn bot_opinion(req: CommandData) -> Result<(), Error> {
+    let opinion = crate::utilities::bot_opinions::get_opinion(&req);
+    send_message(&req.message.channel_id, &req.ctx, |m| {
+        m.embed(|e| setup_embed(&req.current_user, e, "Opinion", opinion))
+    })
+    .await?;
     Ok(())
 }

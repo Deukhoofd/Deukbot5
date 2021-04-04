@@ -166,12 +166,14 @@ dependencies = [
  "num",
  "num-derive",
  "num-traits",
+ "rand 0.8.3",
  "regex",
  "serenity",
  "simplelog",
  "tokio",
  "tokio-postgres",
  "unicase",
+ "vader_sentiment",
 ]
 
 [[package]]
@@ -1565,6 +1567,18 @@ name = "utf-8"
 version = "0.7.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "05e42f7c18b8f902290b009cde6d651262f956c98bc51bca4cd1d511c9cd85c7"
+
+[[package]]
+name = "vader_sentiment"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1c7e85e85d9ec91fba6e78ecfd0dffb3192bea55c73f58a35b15216b1dd85bf4"
+dependencies = [
+ "lazy_static",
+ "maplit",
+ "regex",
+ "unicase",
+]
 
 [[package]]
 name = "version_check"

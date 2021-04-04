@@ -9,6 +9,7 @@ pub mod deukbot_result;
 pub mod embed;
 pub mod global;
 pub mod message_handling;
+pub mod utilities;
 
 use serenity::async_trait;
 use serenity::client::{Client, Context, EventHandler};

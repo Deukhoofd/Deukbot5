@@ -17,7 +17,7 @@ pub enum ParameterType {
 }
 
 pub struct RequestParameter {
-    pub(crate) kind: ParameterType,
+    pub(crate) _kind: ParameterType,
     pub(crate) value: String,
 }
 

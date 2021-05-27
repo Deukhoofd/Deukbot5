@@ -1,8 +1,6 @@
-use crate::message_handling::command_handler::command_data::CommandData;
 use rand::rngs::StdRng;
 use rand::seq::SliceRandom;
 use rand::{Rng, SeedableRng};
-use regex::Regex;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
@@ -28,8 +26,7 @@ static NEGATIVE_OPINIONS: [&str; 6] = [
     "Please stop bothering me, I actually have things to do.",
 ];
 
-pub fn get_opinion(req: &CommandData) -> &'static str {
-    let extend = req.parameters[0].as_string();
+pub fn get_opinion(extend: &String) -> &'static str {
     if extend.is_empty() {
         return "Think about what?";
     }
@@ -49,7 +46,7 @@ pub fn get_opinion(req: &CommandData) -> &'static str {
     extend.hash(&mut hasher);
     let hash = hasher.finish();
     let mut rng = StdRng::seed_from_u64(hash);
-    let positive = rng.gen_range(-20..80) < req.permission as i8;
+    let positive = rng.gen_range(-20..80) < 20;
     return if positive {
         POSITIVE_OPINIONS.choose(&mut rng).unwrap()
     } else {

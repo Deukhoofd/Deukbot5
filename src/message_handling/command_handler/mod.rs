@@ -12,6 +12,7 @@ pub mod command_data;
 pub mod command_groups;
 pub mod command_request;
 mod parameter_matcher;
+pub mod slash_command_handling;
 
 pub async fn handle_message(ctx: Context, msg: &Message) -> DeukbotResult {
     if msg.content.is_empty() {

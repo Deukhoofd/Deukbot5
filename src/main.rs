@@ -1,6 +1,7 @@
 #![feature(const_mut_refs)]
 #![feature(fn_traits)]
 #![feature(in_band_lifetimes)]
+#![feature(once_cell)]
 
 #[allow(clippy::too_many_arguments)]
 pub mod database;
@@ -33,6 +34,7 @@ use deukbot_result::DeukbotResult;
 use serenity::model::channel::Message;
 use serenity::model::gateway::Ready;
 use serenity::model::id::UserId;
+use serenity::model::interactions::Interaction;
 use std::env;
 
 #[tokio::main]
@@ -62,6 +64,7 @@ async fn main() {
     let token = env::var("DISCORD_TOKEN").expect("token");
     let mut client = Client::builder(token)
         .event_handler(Handler)
+        .application_id(835520127368691723)
         .await
         .expect("Error creating client");
 
@@ -83,6 +86,25 @@ impl EventHandler for Handler {
 
     async fn ready(&self, _ctx: Context, _data_about_bot: Ready) {
         info!("Ready!");
+        crate::message_handling::command_handler::slash_command_handling::register_global_commands(
+            _ctx,
+        )
+        .await
+        .unwrap();
+    }
+
+    async fn interaction_create(&self, _ctx: Context, _interaction: Interaction) {
+        let res = crate::message_handling::command_handler::slash_command_handling::call_command(
+            _ctx,
+            _interaction,
+        )
+        .await;
+        if res.is_err() {
+            error!(
+                "Interaction response errored with: '{}'",
+                res.err().unwrap().to_string()
+            );
+        }
     }
 }
 

@@ -86,7 +86,7 @@ impl CommandRequestType {
                         break;
                     }
                     a.push(RequestParameter {
-                        kind: g[i],
+                        _kind: g[i],
                         value: p.unwrap().as_str().to_string(),
                     });
                 }

@@ -182,7 +182,7 @@ async fn avatar(req: CommandData) -> Result<(), Error> {
 }
 
 async fn bot_opinion(req: CommandData) -> Result<(), Error> {
-    let opinion = crate::utilities::bot_opinions::get_opinion(&req);
+    let opinion = crate::utilities::bot_opinions::get_opinion(&req.parameters[0].value);
     send_message(&req.message.channel_id, &req.ctx, |m| {
         m.embed(|e| setup_embed(&req.current_user, e, "Opinion", opinion))
     })
